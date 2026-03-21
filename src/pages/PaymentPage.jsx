@@ -1,10 +1,15 @@
 import { useSelector, useDispatch } from "react-redux";
-import { selectCartTotalAmount } from "../features/cart/cartSelectors";
+import {
+  selectCartItems,
+  selectCartTotalAmount,
+} from "../features/cart/cartSelectors";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { clearCart } from "../features/cart/cartSlice";
+import { createOrder } from "../features/orders/orderSlice";
 
 const PaymentPage = () => {
+  const cartItems = useSelector(selectCartItems);
   const totalAmount = useSelector(selectCartTotalAmount);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -17,7 +22,15 @@ const PaymentPage = () => {
 
     // 🔁 Mock gateway delay
     setTimeout(() => {
-      dispatch(clearCart());     // clear cart after success
+      dispatch(
+        createOrder({
+          items: cartItems,
+          totalAmount,
+          orderDate: new Date().toISOString(),
+          status: "Placed",
+        })
+      );
+      dispatch(clearCart()); // clear cart after success
       navigate("/order-success");
     }, 1500);
   };

@@ -8,6 +8,8 @@ import PaymentPage from "./pages/PaymentPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import OrdersPage from "./pages/OrdersPage";
+import OrderDetailsPage from "./pages/OrderDetailsPage";
 
 import HomePage from "./pages/HomePage";
 import ProductPage from "./pages/ProductPage";
@@ -43,6 +45,22 @@ function App() {
             />
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders/:orderId"
+              element={
+                <ProtectedRoute>
+                  <OrderDetailsPage />
+                </ProtectedRoute>
+              }
+            />
 
           </Routes>
         </main>
