@@ -2,34 +2,28 @@ import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import {
-  selectAllProducts,
+  selectSelectedProduct,
   selectProductLoading,
 } from "../features/products/productSelectors";
-import { fetchProducts } from "../features/products/productSlice";
+import { fetchProductById } from "../features/products/productSlice";
 import { addToCart } from "../features/cart/cartSlice";
 
 const ProductPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
 
-  const products = useSelector(selectAllProducts);
+  const product = useSelector(selectSelectedProduct);
   const loading = useSelector(selectProductLoading);
 
-  // 🔥 ENSURE DATA EXISTS
+  // 🔥 FETCH SPECIFIC PRODUCT
   useEffect(() => {
-    if (products.length === 0) {
-      dispatch(fetchProducts());
-    }
-  }, [dispatch, products.length]);
+    dispatch(fetchProductById(id));
+  }, [dispatch, id]);
 
   // ⏳ Still loading
   if (loading) {
     return <p className="p-6">Loading product...</p>;
   }
-
-  const product = products.find(
-    (p) => p.id === Number(id)
-  );
 
   // ❌ Only AFTER loading
   if (!product) {

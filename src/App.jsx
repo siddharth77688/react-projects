@@ -10,6 +10,8 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
+import AdminProductPage from "./pages/AdminProductPage";
+import AdminPanel from "./pages/AdminPanel";
 
 import HomePage from "./pages/HomePage";
 import ProductPage from "./pages/ProductPage";
@@ -26,6 +28,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/admin/products" element={<AdminProductPage />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route
               path="/checkout"
               element={

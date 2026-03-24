@@ -7,6 +7,7 @@ const Sidebar = ({ onClose }) => {
   const isAuth = useSelector(
     (state) => state.auth.isAuthenticated
   );
+  const user = useSelector((state) => state.auth.user);
 
   return (
     <>
@@ -23,15 +24,28 @@ const Sidebar = ({ onClose }) => {
         </h2>
 
         <nav className="flex flex-col gap-4">
-          <Link to="/" onClick={onClose}>Home</Link>
-          <Link to="/cart" onClick={onClose}>Cart</Link>
-          <Link to="/orders" onClick={onClose}>My Orders</Link>
+          {isAuth && user?.role === "ADMIN" ? (
+            <>
+              <Link to="/admin" onClick={onClose} className="text-green-600 font-semibold">
+                Admin Panel
+              </Link>
+              <Link to="/admin/products" onClick={onClose}>Manage Products</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/" onClick={onClose}>Home</Link>
+              <Link to="/cart" onClick={onClose}>Cart</Link>
+              <Link to="/orders" onClick={onClose}>My Orders</Link>
+            </>
+          )}
 
-          {!isAuth ? (
+          {!isAuth && (
             <Link to="/login" onClick={onClose}>
               Login
             </Link>
-          ) : (
+          )}
+
+          {isAuth && (
             <button
               onClick={() => {
                 dispatch(logout());

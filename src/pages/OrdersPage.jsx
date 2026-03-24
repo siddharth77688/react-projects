@@ -1,10 +1,35 @@
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { selectOrders } from "../features/orders/orderSelectors";
+import { getOrdersAPI } from "../services/orderAPI";
 
 const OrdersPage = () => {
-  const orders = useSelector(selectOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const data = await getOrdersAPI();
+      setOrders(data);
+    } catch (err) {
+      setError("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="max-w-4xl mx-auto p-6">Loading orders...</div>;
+  }
+
+  if (error) {
+    return <div className="max-w-4xl mx-auto p-6 text-red-600">{error}</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -23,7 +48,7 @@ const OrdersPage = () => {
         <div className="space-y-4">
           {orders.map((order) => (
             <div
-              key={order.id}
+              key={order.orderId}
               className="bg-white rounded-md shadow-sm border p-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -31,13 +56,13 @@ const OrdersPage = () => {
                   <div className="text-sm text-gray-600">
                     Order Date:{" "}
                     <span className="font-medium text-gray-900">
-                      {new Date(order.orderDate).toLocaleString()}
+                      {new Date(order.orderDate || order.id).toLocaleString()}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
                     Status:{" "}
                     <span className="font-medium text-gray-900">
-                      {order.status}
+                      {order.status || "Placed"}
                     </span>
                   </div>
                 </div>
@@ -50,7 +75,7 @@ const OrdersPage = () => {
                     </span>
                   </div>
                   <button
-                    onClick={() => navigate(`/orders/${order.id}`)}
+                    onClick={() => navigate(`/orders/${order.orderId}`)}
                     className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
                   >
                     View Details / Track Order
@@ -63,21 +88,21 @@ const OrdersPage = () => {
                   Products
                 </h2>
                 <div className="divide-y">
-                  {order.items.map((item) => (
+                  {order.lines?.map((line) => (
                     <div
-                      key={item.product.id}
+                      key={line.productId}
                       className="py-3 flex items-start justify-between gap-4"
                     >
                       <div>
                         <div className="font-medium">
-                          {item.product.title}
+                          {line.productTitle || "Product"}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Qty: {item.quantity}
+                          Qty: {line.quantity}
                         </div>
                       </div>
                       <div className="text-sm font-semibold">
-                        ₹{item.product.price * item.quantity}
+                        ₹{line.price * line.quantity}
                       </div>
                     </div>
                   ))}

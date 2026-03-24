@@ -1,6 +1,9 @@
 export const selectAllProducts = (state) =>
   state.products.items;
 
+export const selectSelectedProduct = (state) =>
+  state.products.selectedProduct;
+
 export const selectProductLoading = (state) =>
   state.products.loading;
 
@@ -11,15 +14,10 @@ export const selectFilteredProducts = (state) => {
   const products = state.products.items || [];
   const query = (state.products.searchQuery || "").toLowerCase();
 
-  // ✅ ONLY ELECTRONICS / MOBILES
-  const electronicsOnly = products.filter(
-    (product) => product.category === "electronics"
-  );
+  // 🔍 FILTER BY SEARCH QUERY (all categories)
+  if (!query) return products;
 
-  // 🔍 SEARCH WITHIN ELECTRONICS
-  if (!query) return electronicsOnly;
-
-  return electronicsOnly.filter((product) =>
+  return products.filter((product) =>
     product.title.toLowerCase().includes(query)
   );
 };

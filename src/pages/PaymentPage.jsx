@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { clearCart } from "../features/cart/cartSlice";
-import { createOrder } from "../features/orders/orderSlice";
+import { createOrderAPI } from "../services/orderAPI";
 
 const PaymentPage = () => {
   const cartItems = useSelector(selectCartItems);
@@ -17,22 +17,23 @@ const PaymentPage = () => {
   const [method, setMethod] = useState("upi");
   const [processing, setProcessing] = useState(false);
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setProcessing(true);
 
-    // 🔁 Mock gateway delay
-    setTimeout(() => {
-      dispatch(
-        createOrder({
-          items: cartItems,
-          totalAmount,
-          orderDate: new Date().toISOString(),
-          status: "Placed",
-        })
+    try {
+      // Call API to create order - expand product IDs based on quantities
+      const productIds = cartItems.flatMap((item) => 
+        Array(item.quantity).fill(item.product.id)
       );
-      dispatch(clearCart()); // clear cart after success
+      await createOrderAPI({ productIds });
+      
+      dispatch(clearCart());
       navigate("/order-success");
-    }, 1500);
+    } catch (err) {
+      alert("Failed to create order. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (

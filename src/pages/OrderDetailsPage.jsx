@@ -1,12 +1,32 @@
-import { useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { selectOrderById } from "../features/orders/orderSelectors";
+import { getOrderByIdAPI } from "../services/orderAPI";
 import { ORDER_STATUSES } from "../features/orders/orderSlice";
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
-  const order = useSelector(selectOrderById(orderId));
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchOrder();
+  }, [orderId]);
+
+  const fetchOrder = async () => {
+    try {
+      console.log("Fetching order with ID:", orderId);
+      const data = await getOrderByIdAPI(orderId);
+      console.log("Order data received:", data);
+      setOrder(data);
+    } catch (err) {
+      console.error("Error loading order:", err);
+      console.error("Error response:", err.response);
+      setError("Failed to load order: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const currentStatusIndex = useMemo(() => {
     if (!order) return -1;
@@ -14,20 +34,31 @@ const OrderDetailsPage = () => {
     return idx === -1 ? 0 : idx;
   }, [order]);
 
+  if (loading) {
+    return <div className="max-w-3xl mx-auto p-6">Loading order...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-md p-6 border">
+          <div className="text-lg font-semibold mb-2">Error</div>
+          <div className="text-gray-700 mb-4">{error}</div>
+          <Link to="/orders" className="inline-block text-blue-600 hover:underline">
+            Back to Orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-md p-6 border">
-          <div className="text-lg font-semibold mb-2">
-            Order not found
-          </div>
-          <div className="text-gray-700 mb-4">
-            We couldn’t find an order with this ID.
-          </div>
-          <Link
-            to="/orders"
-            className="inline-block text-blue-600 hover:underline"
-          >
+          <div className="text-lg font-semibold mb-2">Order not found</div>
+          <div className="text-gray-700 mb-4">We couldn’t find an order with this ID.</div>
+          <Link to="/orders" className="inline-block text-blue-600 hover:underline">
             Back to Orders
           </Link>
         </div>
@@ -44,7 +75,7 @@ const OrderDetailsPage = () => {
             <div className="text-sm text-gray-600 mt-1">
               Order Date:{" "}
               <span className="font-medium text-gray-900">
-                {new Date(order.orderDate).toLocaleString()}
+                {order.orderDate ? new Date(order.orderDate).toLocaleString() : "N/A"}
               </span>
             </div>
             <div className="text-sm text-gray-600">
@@ -121,24 +152,18 @@ const OrderDetailsPage = () => {
       </div>
 
       <div className="bg-white rounded-md p-4 border">
-        <h2 className="text-sm font-semibold mb-2">
-          Items
-        </h2>
+        <h2 className="text-sm font-semibold mb-2">Items</h2>
         <div className="divide-y">
-          {order.items.map((item) => (
+          {order.lines?.map((line) => (
             <div
-              key={item.product.id}
+              key={line.productId}
               className="py-3 flex items-start justify-between gap-4"
             >
               <div>
-                <div className="font-medium">{item.product.title}</div>
-                <div className="text-sm text-gray-600">
-                  Qty: {item.quantity}
-                </div>
+                <div className="font-medium">{line.productTitle || "Product"}</div>
+                <div className="text-sm text-gray-600">Qty: {line.quantity}</div>
               </div>
-              <div className="text-sm font-semibold">
-                ₹{item.product.price * item.quantity}
-              </div>
+              <div className="text-sm font-semibold">₹{line.price * line.quantity}</div>
             </div>
           ))}
         </div>

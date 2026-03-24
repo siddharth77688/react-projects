@@ -17,8 +17,21 @@ const HomePage = () => {
   const products = useSelector(selectFilteredProducts);
   const loading = useSelector(selectProductLoading);
 
+  // 🔍 DEBUG: Log state values
+  console.log("HomePage Debug:", {
+    productsLength: products?.length,
+    productsData: products,
+    loading: loading,
+    hasProducts: products && products.length > 0,
+  });
+
+  // Safety check - ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
+
   useEffect(() => {
+    console.log("HomePage useEffect triggered, products.length:", products?.length);
     if (products.length === 0) {
+      console.log("Dispatching fetchProducts...");
       dispatch(fetchProducts());
     }
   }, [dispatch, products.length]);
@@ -33,10 +46,10 @@ const HomePage = () => {
             <SkeletonCard key={i} />
           ))}
         </div>
-      ) : products.length > 0 ? (
+      ) : safeProducts.length > 0 ? (
         <>
-          <DealsSection title="Top Deals" products={products} />
-          <ProductSection title="Top Rated Products" products={products} />
+          <DealsSection title="Top Deals" products={safeProducts} />
+          <ProductSection title="Top Rated Products" products={safeProducts} />
         </>
       ) : (
         <p className="text-center text-gray-500">
